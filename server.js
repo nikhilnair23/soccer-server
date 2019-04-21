@@ -38,39 +38,21 @@ let db_config = {
     }
 });*/
 
-var mysql_pool = mysql.createPool({
-    connectionLimit: 100,
+
+
+let connection;
+let mysql_pool = mysql.createPool({
+    connectionLimit: 10,
     host: 'us-cdbr-iron-east-02.cleardb.net',
     user: 'bed9bed8e064dc',
     password: '9f19c1e0',
     database: 'heroku_59367cadade0e22'
 });
 
-let connection;
-
-function retreiveConnection() {
-
-    // connection = mysql.createConnection(db_config);
-    /*mysql_pool.getConnection(function (err,conn) {
-        conn.on('error',function (err) {
-            console.log('db error', err);
-            if(err.code === 'PROTOCOL_CONNECTION_LOST') {// Connection to the MySQL server is usually
-                // database.releaseConnection(connection)
-                conn.release();
-                handleDisconnect();                         // lost due to either server restart, or a
-            } else {                                      // connnection idle timeout (the wait_timeout
-                throw err;                                  // server variable configures this)
-            }
-        })
-        return conn
-    })*/
-}
 
 function handleDisconnect() {
 
-    connection = mysql.createConnection(db_config);// Recreate the connection, since
-    // let connection = database.getConnection(db_config);
-    // connection = retreiveConnection();
+    /*connection = mysql.createConnection(db_config);// Recreate the connection, since
 
 
 
@@ -92,7 +74,7 @@ function handleDisconnect() {
         } else {                                      // connnection idle timeout (the wait_timeout
             throw err;                                  // server variable configures this)
         }
-    });
+    });*/
 }
 
 handleDisconnect();
@@ -111,40 +93,45 @@ app.use(session({
 const selectUsers = 'SELECT * FROM user';
 
 app.get('/', (req, res) => {
-    // initDB();
-    // connection=getDB();
-    connection.query(selectUsers, (err, results) => {
-        if (err) {
-            return res.send(err);
-        }
-        else {
-            return res.json({
-                data: results
-            });
-        }
+    mysql_pool.getConnection(function (err,connection) {
+        connection.query(selectUsers, (err, results) => {
+            if (err) {
+                return res.send(err);
+            }
+            else {
+                return res.json({
+                    data: results
+                });
+            }
+        })
+        connection.release();
     })
+
 });
 
 
 app.post('/register', (req, res) => {
 
+
     const {username, password, first_name, last_name, favorite_team, isAdmin} = req.body;
-
-    console.log(req.body);
-
     const insert_query = `INSERT INTO user (username, password, first_name, last_name, favorite_team, isAdmin) 
   VALUES ('${username}', '${password}', '${first_name}', '${last_name}', '${favorite_team}', '${isAdmin}')`;
 
-    connection.query(insert_query, (err, results) => {
-        if (err) {
-            res.status(400).json('Invalid credentials');
-            //res.send('unsuccessful yo');
-        }
-        else {
-            req.session['currentUser'] = username;
-            res.json(req.body);
-        }
-    });
+    mysql_pool.getConnection(function (err,connection) {
+        connection.query(insert_query, (err, results) => {
+            if (err) {
+                res.status(400).json('Invalid credentials');
+                //res.send('unsuccessful yo');
+            }
+            else {
+                req.session['currentUser'] = username;
+                res.json(req.body);
+            }
+        });
+        connection.release();
+    })
+
+
 });
 
 app.post('/login', (req, res) => {
@@ -153,21 +140,24 @@ app.post('/login', (req, res) => {
 
     const login_query = `SELECT username, password FROM user WHERE username = '${username}' AND password = '${password}'`;
 
-    connection.query(login_query, (err, results) => {
-        if (err) {
-            res.send('something happened sorry');
-        }
-        else {
-            if (results.length === 0) {
-                //res.send('you dont exist man');
-                res.status(400).json('You dont exist man');
+    mysql_pool.getConnection(function (err,connection) {
+        connection.query(login_query, (err, results) => {
+            if (err) {
+                res.send('something happened sorry');
             }
             else {
-                req.session['currentUser'] = username;
-                res.send('you exist!');
+                if (results.length === 0) {
+                    //res.send('you dont exist man');
+                    res.status(400).json('You dont exist man');
+                }
+                else {
+                    req.session['currentUser'] = username;
+                    res.send('you exist!');
+                }
             }
-        }
-    });
+        });
+        connection.release();
+    })
 
 });
 
@@ -178,28 +168,49 @@ app.get('/profile', (req, res) => {
 
     const profile_query = `SELECT username FROM user WHERE username = '${username}'`;
 
-    connection.query(profile_query, (err, results) => {
-        if (err) {
-            res.send('something happened sorry');
-        }
-        else {
-            if (results.length === 0) {
-                res.send('this guy dont exist man');
+    mysql_pool.getConnection(function (err,connection) {
+        connection.query(profile_query, (err, results) => {
+            if (err) {
+                res.send('something happened sorry');
             }
             else {
-                res.send(username);
+                if (results.length === 0) {
+                    res.send('this guy dont exist man');
+                }
+                else {
+                    res.send(username);
+                }
             }
-        }
-    });
+        });
+        connection.release();
+    })
+
+
 });
 
 app.get('/loggedIn', (req,res) => {
+
     console.log(req.session);
-    if (req.session['currenUser']!==""){
-        res.send(req.session['currentUser'])
+    let user = req.session['currentUser']
+    if (user!==undefined){
+        mysql_pool.getConnection(function (err,connection) {
+            const profile_query = `SELECT * FROM user WHERE username = '${user}'`;
+            connection.query(profile_query, (err, results) => {
+                if (err) {
+                    res.send('something happened sorry');
+                }
+                else {
+                    return res.json({
+                        data: results[0]
+                    });
+                }
+            });
+            connection.release();
+        })
+        // res.send(req.session['currentUser'])
     }
     else{
-        res.send("");
+        res.send("NOT_LOGGED_IN");
     }
 })
 
@@ -217,7 +228,6 @@ app.get('/leagues', (req, res) => {
             //console.log(result.status, result.headers, result.body);
             res.send(result.body);
         });
-
 });
 
 
@@ -242,7 +252,6 @@ app.get('/standings/2', (req, res) => {
             //console.log(result.status, result.headers, result.body);
             res.send(result.body);
         });
-
 });
 
 app.get('/standings/87', (req, res) => {
@@ -384,38 +393,50 @@ app.get('/teams/team/:team_id', (req, res) => {
 });
 
 app.post('/api/get_comment_news/', (req,res) => {
-    let url = req.body.url;
-    const getComments = `SELECT * FROM comment_news WHERE url = '${url}'`;
-    // let getComments = `SELECT username FROM user WHERE username = '${username}'`;
-    connection.query(getComments, (err, results) => {
-        if (err) {
-            res.status(400).json("Couldn't get comment");
-            //res.send('unsuccessful yo');
-        }
-        else {
-            console.log(results);
-            return res.json(200,{
-                body: results
-            });
-        }
-    });
+
+    mysql_pool.getConnection(function (err,connection) {
+        let url = req.body.url;
+        const getComments = `SELECT * FROM comment_news WHERE url = '${url}'`;
+        // let getComments = `SELECT username FROM user WHERE username = '${username}'`;
+        connection.query(getComments, (err, results) => {
+            if (err) {
+                res.status(400).json("Couldn't get comment");
+                //res.send('unsuccessful yo');
+            }
+            else {
+                console.log(results);
+                return res.json(200,{
+                    body: results
+                });
+            }
+        });
+        connection.release();
+    })
+    
 })
 
 app.post('/api/comment_news', (req,res) => {
+    
     const {url, user, comment, date} = req.body
     const url1 = req.body.url;
     const insert_query = `INSERT INTO comment_news (url, user, comment, date) 
   VALUES ('${url}', '${user}', '${comment}', '${date}')`;
+    
+    
+    mysql_pool.getConnection(function (err,) {
+        connection.query(insert_query, (err, results) => {
+            if (err) {
+                res.status(400).json("Couldn't add comment");
+                //res.send('unsuccessful yo');
+            }
+            else {
+                res.sendStatus(200);
+            }
+        });
+        connection.release();
+    })
 
-    connection.query(insert_query, (err, results) => {
-        if (err) {
-            res.status(400).json("Couldn't add comment");
-            //res.send('unsuccessful yo');
-        }
-        else {
-            res.sendStatus(200);
-        }
-    });
+
 })
 
 app.listen(5000, () => {
