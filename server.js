@@ -120,17 +120,17 @@ app.post('/register', (req, res) => {
     mysql_pool.getConnection(function (err,connection) {
         connection.query(insert_query, (err, results) => {
             if (err) {
-                res.status(400).json('Invalid credentials');
+                //res.status(400).json('Invalid credentials');
                 //res.send('unsuccessful yo');
+                res.send([]);
             }
             else {
-                req.session['currentUser'] = username;
-                res.json(req.body);
+                //res.json(req.body);
+                res.send(req.body);
             }
         });
         connection.release();
     })
-
 
 });
 
@@ -148,11 +148,14 @@ app.post('/login', (req, res) => {
             else {
                 if (results.length === 0) {
                     //res.send('you dont exist man');
-                    res.status(400).json('You dont exist man');
+                    //res.status(400).json('You dont exist man');
+                    res.send([]);
                 }
                 else {
                     req.session['currentUser'] = username;
-                    res.send('you exist!');
+                    console.log(results);
+                    //res.send('you exist!');
+                    res.send(results);
                 }
             }
         });
@@ -161,7 +164,7 @@ app.post('/login', (req, res) => {
 
 });
 
-app.get('/profile', (req, res) => {
+app.get('/profile/:username', (req,res) => {
 
     const {username} = req.query;
     console.log(username);
@@ -184,7 +187,84 @@ app.get('/profile', (req, res) => {
         });
         connection.release();
     })
+});
 
+app.put('/profile/:username', (req,res) => {
+
+    const {username} = req.params;
+    const {password, first_name, last_name} = req.body;
+    console.log(username);
+    console.log(first_name);
+
+    const profile_query =  `UPDATE user SET first_name = '${first_name}', last_name = '${last_name}', password = '${password}' WHERE username = '${username}'`;
+    mysql_pool.getConnection(function (err,connection) {
+        connection.query(profile_query, (err, results) => {
+            if (err) {
+                res.send('something happened sorry');
+            }
+            else {
+                if (results.length === 0) {
+                    res.send('this guy dont exist man');
+                }
+                else {
+                    res.send(req.body);
+                }
+            }
+        });
+        connection.release();
+    })
+
+
+});
+
+app.delete('/delete/:username', (req,res) => {
+
+    const {username} = req.params;
+    console.log(username);
+
+    const profile_query =  `DELETE FROM user WHERE username = '${username}'`;
+    mysql_pool.getConnection(function (err,connection) {
+        connection.query(profile_query, (err, results) => {
+            if (err) {
+                res.send('something happened sorry');
+            }
+            else {
+                if (results.length === 0) {
+                    res.send('this guy dont exist man');
+                }
+                else {
+                    res.send(req.body);
+                }
+            }
+        });
+        connection.release();
+    })
+});
+
+app.put('/favorite_team/:username', (req,res) => {
+
+    const {username} = req.params;
+    const {favorite_team} = req.body;
+    console.log(favorite_team);
+
+    const profile_query =  `UPDATE user SET favorite_team = '${favorite_team}' WHERE username = '${username}'`;
+    mysql_pool.getConnection(function (err,connection) {
+        connection.query(profile_query, (err, results) => {
+            if (err) {
+                res.send('something happened sorry');
+            }
+            else {
+                if (results.length === 0) {
+                    res.send('this guy dont exist man');
+                }
+                else {
+
+                    res.send(req.body);
+                }
+            }
+        });
+        connection.release();
+    })
 
 });
 
@@ -210,7 +290,9 @@ app.get('/loggedIn', (req,res) => {
         // res.send(req.session['currentUser'])
     }
     else{
-        res.send("NOT_LOGGED_IN");
+        return res.json({
+            data: "NOT_LOGGED_IN"
+        });
     }
 })
 
@@ -231,55 +313,11 @@ app.get('/leagues', (req, res) => {
 });
 
 
-app.get('/standings/132', (req, res) => {
+app.get('/standings/:id', (req, res) => {
 
-    unirest.get("https://api-football-v1.p.rapidapi.com/leagueTable/132")
-        .header("X-RapidAPI-Key", "b83be741d1mshbbc318cf68d0e9fp139528jsn0cddc0e04919")
-        .header("Accept", "application/json")
-        .end(function (result) {
-            //console.log(result.status, result.headers, result.body);
-            res.send(result.body);
-        });
+    const {id} = req.params
 
-});
-
-app.get('/standings/2', (req, res) => {
-
-    unirest.get("https://api-football-v1.p.rapidapi.com/leagueTable/2")
-        .header("X-RapidAPI-Key", "b83be741d1mshbbc318cf68d0e9fp139528jsn0cddc0e04919")
-        .header("Accept", "application/json")
-        .end(function (result) {
-            //console.log(result.status, result.headers, result.body);
-            res.send(result.body);
-        });
-});
-
-app.get('/standings/87', (req, res) => {
-
-    unirest.get("https://api-football-v1.p.rapidapi.com/leagueTable/87")
-        .header("X-RapidAPI-Key", "b83be741d1mshbbc318cf68d0e9fp139528jsn0cddc0e04919")
-        .header("Accept", "application/json")
-        .end(function (result) {
-            //console.log(result.status, result.headers, result.body);
-            res.send(result.body);
-        });
-
-});
-
-app.get('/standings/8', (req, res) => {
-
-    unirest.get("https://api-football-v1.p.rapidapi.com/leagueTable/8")
-        .header("X-RapidAPI-Key", "b83be741d1mshbbc318cf68d0e9fp139528jsn0cddc0e04919")
-        .header("Accept", "application/json")
-        .end(function (result) {
-            //console.log(result.status, result.headers, result.body);
-            res.send(result.body);
-        });
-});
-
-app.get('/standings/94', (req, res) => {
-
-    unirest.get("https://api-football-v1.p.rapidapi.com/leagueTable/94")
+    unirest.get("https://api-football-v1.p.rapidapi.com/leagueTable/" + id)
         .header("X-RapidAPI-Key", "b83be741d1mshbbc318cf68d0e9fp139528jsn0cddc0e04919")
         .header("Accept", "application/json")
         .end(function (result) {
