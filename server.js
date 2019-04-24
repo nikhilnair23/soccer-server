@@ -7,11 +7,25 @@ const unirest = require('unirest');
 // const getDB = require('./data/db').getDb;
 const bodyparser = require('body-parser');
 let session = require('express-session')
-// require('./data/db')()
-// initDB();
+
+let corsOptions = {
+    origin: 'http://localhost:3000',
+    credentials: true };
+app.use(cors(corsOptions));
+
+// app.use(function(req, res, next) {
+//     res.header("Access-Control-Allow-Origin",
+//         "*");
+//     res.header("Access-Control-Allow-Headers",
+//         "Origin, X-Requested-With, Content-Type, Accept");
+//     res.header("Access-Control-Allow-Methods",
+//         "GET, POST, PUT, DELETE, OPTIONS");
+//     res.header("Access-Control-Allow-Credentials", "false");
+//     next();
+// });
+
 
 // require('./services/comment.service.server')(app);
-
 
 /*const connection = mysql.createConnection({
     host: 'us-cdbr-iron-east-02.cleardb.net',
@@ -20,12 +34,14 @@ let session = require('express-session')
     database: 'heroku_59367cadade0e22'
 });*/
 
+/*
 let db_config = {
     host: 'us-cdbr-iron-east-02.cleardb.net',
     user: 'bed9bed8e064dc',
     password: '9f19c1e0',
     database: 'heroku_59367cadade0e22'
 };
+*/
 
 
 
@@ -37,8 +53,6 @@ let db_config = {
         console.log('connected')
     }
 });*/
-
-
 
 let connection;
 let mysql_pool = mysql.createPool({
@@ -80,7 +94,7 @@ function handleDisconnect() {
 handleDisconnect();
 
 
-app.use(cors());
+// app.use(cors());
 app.use(bodyparser());
 app.use(unirest());
 app.use(session({
@@ -89,10 +103,11 @@ app.use(session({
     secret: 'any string'
 }));
 
+
 // let connection = getDB();
 const selectUsers = 'SELECT * FROM user';
 
-app.get('/', (req, res) => {
+app.get('/users', (req, res) => {
     mysql_pool.getConnection(function (err,connection) {
         connection.query(selectUsers, (err, results) => {
             if (err) {
@@ -111,8 +126,6 @@ app.get('/', (req, res) => {
 
 
 app.post('/register', (req, res) => {
-
-
     const {username, password, first_name, last_name, favorite_team, isAdmin} = req.body;
     const insert_query = `INSERT INTO user (username, password, first_name, last_name, favorite_team, isAdmin) 
   VALUES ('${username}', '${password}', '${first_name}', '${last_name}', '${favorite_team}', '${isAdmin}')`;
@@ -126,6 +139,7 @@ app.post('/register', (req, res) => {
             }
             else {
                 //res.json(req.body);
+                req.session['currentUser'] = username;
                 res.send(req.body);
             }
         });
@@ -161,8 +175,12 @@ app.post('/login', (req, res) => {
         });
         connection.release();
     })
-
 });
+
+app.post('/signout', (req,res) => {
+    req.session.destroy();
+    res.send(200);
+})
 
 app.get('/profile/:username', (req,res) => {
 
@@ -217,7 +235,7 @@ app.put('/profile/:username', (req,res) => {
 
 });
 
-app.delete('/delete/:username', (req,res) => {
+app.delete('/profile/:username', (req,res) => {
 
     const {username} = req.params;
     console.log(username);
@@ -233,7 +251,10 @@ app.delete('/delete/:username', (req,res) => {
                     res.send('this guy dont exist man');
                 }
                 else {
-                    res.send(req.body);
+                    req.session.currentUser=undefined;
+                    req.session=null;
+                    req.session.destroy();
+                    res.send(200);
                 }
             }
         });
@@ -296,10 +317,10 @@ app.get('/loggedIn', (req,res) => {
     }
 })
 
-app.get('/logout', (req,res) => {
+/*app.get('/logout', (req,res) => {
     req.session.destroy();
     res.send(200);
-})
+})*/
 
 app.get('/leagues', (req, res) => {
 
@@ -461,7 +482,7 @@ app.post('/api/comment_news', (req,res) => {
   VALUES ('${url}', '${user}', '${comment}', '${date}')`;
     
     
-    mysql_pool.getConnection(function (err,) {
+    mysql_pool.getConnection(function (err,connection) {
         connection.query(insert_query, (err, results) => {
             if (err) {
                 res.status(400).json("Couldn't add comment");
@@ -473,8 +494,23 @@ app.post('/api/comment_news', (req,res) => {
         });
         connection.release();
     })
+})
 
-
+app.delete('/api/comment_news',(req,res) => {
+    const {url,user,comment} = req.body
+    const delete_query = `DELETE FROM COMMENT_NEWS WHERE URL='${url}' AND USER = '${user}' AND COMMENT='${comment}'`;
+    mysql_pool.getConnection(function (err,connection) {
+        connection.query(delete_query, (err, results) => {
+            if (err) {
+                res.status(400).json("Couldn't add comment");
+                //res.send('unsuccessful yo');
+            }
+            else {
+                res.sendStatus(200);
+            }
+        });
+        connection.release();
+    })
 })
 
 app.listen(5000, () => {
