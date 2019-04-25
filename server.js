@@ -25,6 +25,7 @@ app.use(cors(corsOptions));
 //     next();
 // });
 
+
 // require('./services/comment.service.server')(app);
 
 /*const connection = mysql.createConnection({
@@ -43,14 +44,7 @@ let db_config = {
 };
 */
 
-/*connection.connect(err => {
-    if (err) {
-        console.log(err);
-    }
-    else {
-        console.log('connected')
-    }
-});*/
+
 
 let connection;
 let mysql_pool = mysql.createPool({
@@ -61,34 +55,12 @@ let mysql_pool = mysql.createPool({
                                       database: 'heroku_59367cadade0e22'
                                   });
 
-function handleDisconnect() {
 
-    /*connection = mysql.createConnection(db_config);// Recreate the connection, since
-
-
-
-                                                    // the old one cannot be reuse
-    connection.connect(function(err) {              // The server is either down
-        if(err) {                                     // or restarting (takes a while sometimes).
-            console.log('error when connecting to db:', err);
-            setTimeout(handleDisconnect, 2000); // We introduce a delay before attempting to reconnect,
-        }                                     // to avoid a hot loop, and to allow our node script to
-    });                                     // process asynchronous requests in the meantime.
-                                            // If you're also serving http, display a 503 error.
-    connection.on('error', function(err) {
-        console.log('db error', err);
-        if(err.code === 'PROTOCOL_CONNECTION_LOST') {
-            connection.destroy();
-            // Connection to the MySQL server is usually
-            // database.releaseConnection(connection)
-            handleDisconnect();                         // lost due to either server restart, or a
-        } else {                                      // connnection idle timeout (the wait_timeout
-            throw err;                                  // server variable configures this)
-        }
-    });*/
+/*function handleDisconnect() {
 }
 
-handleDisconnect();
+handleDisconnect();*/
+
 
 // app.use(cors());
 app.use(bodyparser());
@@ -98,6 +70,7 @@ app.use(session({
                     saveUninitialized: true,
                     secret: 'any string'
                 }));
+
 
 // let connection = getDB();
 const selectUsers = 'SELECT * FROM user';
@@ -159,6 +132,7 @@ app.post('/allteams', (req, res) => {
         connection.release();
     })
 });
+
 
 app.post('/register', (req, res) => {
     const {username, password, first_name, last_name, favorite_team, isAdmin} = req.body;
@@ -310,6 +284,7 @@ app.put('/profile/:username', (req, res) => {
         connection.release();
     })
 
+
 });
 
 app.delete('/profile/:username', (req, res) => {
@@ -358,6 +333,35 @@ app.post('/profile/teams', (req, res) => {
         });
         connection.release();
     })
+})
+
+app.get('/profile/teams/:username',(req,res) => {
+    const {username} = req.params;
+    const profile_query = `SELECT TEAM FROM USER_TEAM WHERE USER = '${username}'`;
+    // let arr[] = new arr;
+
+    mysql_pool.getConnection(function (err,connection) {
+        connection.query(profile_query, (err, results) => {
+            if (err) {
+                res.send('something happened sorry');
+            }
+            else {
+                if (results.length === 0) {
+                    return res.json({
+                        data: []
+                    });
+                }
+                else {
+                    console.log(results);
+                    res.json({
+                        data:results
+                    });
+                }
+            }
+        });
+        connection.release();
+    })
+
 })
 
 app.put('/favorite_team/:username', (req, res) => {
@@ -430,6 +434,7 @@ app.get('/leagues', (req, res) => {
             res.send(result.body);
         });
 });
+
 
 app.get('/standings/:id', (req, res) => {
 
