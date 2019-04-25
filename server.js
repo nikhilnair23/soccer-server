@@ -162,8 +162,8 @@ app.post('/login', (req, res) => {
             else {
                 if (results.length === 0) {
                     //res.send('you dont exist man');
-                    //res.status(400).json('You dont exist man');
-                    res.send([]);
+                    res.sendStatus(400)
+                    // res.send([]);
                 }
                 else {
                     req.session['currentUser'] = username;
@@ -183,11 +183,10 @@ app.post('/signout', (req,res) => {
 })
 
 app.get('/profile/:username', (req,res) => {
-
-    const {username} = req.query;
+    const {username} = req.params;
     console.log(username);
 
-    const profile_query = `SELECT username FROM user WHERE username = '${username}'`;
+    const profile_query = `SELECT * FROM user WHERE username = '${username}'`;
 
     mysql_pool.getConnection(function (err,connection) {
         connection.query(profile_query, (err, results) => {
@@ -199,7 +198,7 @@ app.get('/profile/:username', (req,res) => {
                     res.send('this guy dont exist man');
                 }
                 else {
-                    res.send(username);
+                    res.send(results[0]);
                 }
             }
         });
@@ -262,6 +261,27 @@ app.delete('/profile/:username', (req,res) => {
     })
 });
 
+app.post('/profile/teams',(req,res) => {
+    const {username,team_id, team} = req.body;
+    const insert_query = `INSERT INTO user_team (user, team_id, team) 
+  VALUES ('${username}', '${team_id}', '${team}')`;
+
+    mysql_pool.getConnection(function (err,connection) {
+        connection.query(insert_query, (err, results) => {
+            if (err) {
+                //res.status(400).json('Invalid credentials');
+                //res.send('unsuccessful yo');
+                res.sendStatus(400);
+            }
+            else {
+                //res.json(req.body);
+                res.sendStatus(200);
+            }
+        });
+        connection.release();
+    })
+})
+
 app.put('/favorite_team/:username', (req,res) => {
 
     const {username} = req.params;
@@ -288,6 +308,8 @@ app.put('/favorite_team/:username', (req,res) => {
     })
 
 });
+
+
 
 app.get('/loggedIn', (req,res) => {
 
@@ -507,6 +529,23 @@ app.delete('/api/comment_news',(req,res) => {
             }
             else {
                 res.sendStatus(200);
+            }
+        });
+        connection.release();
+    })
+})
+
+app.get('/api/team_logo',(req,res) => {
+    const {name} = req.body
+    const select_query = `SELECT logo FROM teams WHERE name = '${name}'`
+    mysql_pool.getConnection(function (err,connection) {
+        connection.query(select_query, (err, results) => {
+            if (err) {
+                res.status(400).json("Couldn't find team");
+                //res.send('unsuccessful yo');
+            }
+            else {
+                res.send(results[0]);
             }
         });
         connection.release();
