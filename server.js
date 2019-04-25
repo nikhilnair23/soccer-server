@@ -124,6 +124,47 @@ app.get('/users', (req, res) => {
 
 });
 
+app.get('/teams/all', (req, res) => {
+
+    const selectTeams = 'SELECT * FROM teams';
+
+    mysql_pool.getConnection(function (err,connection) {
+        connection.query(selectTeams, (err, results) => {
+            if (err) {
+                return res.send(err);
+            }
+            else {
+                console.log(results)
+                return res.json({
+                                    data: results
+                                });
+            }
+        })
+        connection.release();
+    })
+
+});
+
+app.post('/allteams', (req,res) => {
+    const{team_id, name, logo} = req.body;
+    const insert_query = `INSERT INTO teams (team_id, name, logo) VALUES ('${team_id}', '${name}', '${logo}')`;
+    //console.log(team_id, name, logo);
+
+    mysql_pool.getConnection(function (err,) {
+        connection.query(insert_query, (err, results) => {
+            if (err) {
+                res.status(400).json("Couldn't add team");
+                //res.send('unsuccessful yo');
+            }
+            else {
+
+                res.sendStatus(200);
+            }
+        });
+        connection.release();
+    })
+});
+
 
 app.post('/register', (req, res) => {
     const {username, password, first_name, last_name, favorite_team, isAdmin} = req.body;
@@ -199,6 +240,30 @@ app.get('/profile/:username', (req,res) => {
                 }
                 else {
                     res.send(results[0]);
+                }
+            }
+        });
+        connection.release();
+    })
+});
+
+app.get('/profile/follow/:username', (req,res) => {
+    const {username} = req.params;
+
+    const profile_query = `SELECT * FROM user_follow WHERE user_following= '${username}'`;
+
+    mysql_pool.getConnection(function (err,connection) {
+        connection.query(profile_query, (err, results) => {
+            if (err) {
+                res.send('something happened sorry');
+            }
+            else {
+                if (results.length === 0) {
+                    res.send('this guy dont exist man');
+                }
+                else {
+                    console.log(results);
+                    res.json(results);
                 }
             }
         });
