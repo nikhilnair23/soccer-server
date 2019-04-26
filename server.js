@@ -164,7 +164,7 @@ app.post('/login', (req, res) => {
 
     const login_query = `SELECT username, password FROM user WHERE username = '${username}' AND password = '${password}'`;
 
-    mysql_pool.getConnection(function (err,connection) {
+    mysql_pool.getConnection(function (err, connection) {
         connection.query(login_query, (err, results) => {
             if (err) {
                 res.send('something happened sorry');
@@ -187,18 +187,18 @@ app.post('/login', (req, res) => {
     })
 });
 
-app.post('/signout', (req,res) => {
+app.post('/signout', (req, res) => {
     req.session.destroy();
     res.send(200);
 })
 
-app.get('/profile/:username', (req,res) => {
+app.get('/profile/:username', (req, res) => {
     const {username} = req.params;
     console.log(username);
 
     const profile_query = `SELECT * FROM user WHERE username = '${username}'`;
 
-    mysql_pool.getConnection(function (err,connection) {
+    mysql_pool.getConnection(function (err, connection) {
         connection.query(profile_query, (err, results) => {
             if (err) {
                 res.send('something happened sorry');
@@ -216,12 +216,12 @@ app.get('/profile/:username', (req,res) => {
     })
 });
 
-app.get('/profile/follow/:username', (req,res) => {
+app.get('/profile/follow/:username', (req, res) => {
     const {username} = req.params;
 
     const profile_query = `SELECT * FROM user_follow WHERE user_following= '${username}'`;
 
-    mysql_pool.getConnection(function (err,connection) {
+    mysql_pool.getConnection(function (err, connection) {
         connection.query(profile_query, (err, results) => {
             if (err) {
                 res.send('something happened sorry');
@@ -231,7 +231,7 @@ app.get('/profile/follow/:username', (req,res) => {
                     res.json([]);
                 }
                 else {
-                    console.log(results);
+                    console.log(results.length);
                     res.json(results);
                 }
             }
@@ -267,8 +267,8 @@ app.put('/profile/:username', (req, res) => {
     console.log(username);
     console.log(first_name);
 
-    const profile_query =  `UPDATE user SET first_name = '${first_name}', last_name = '${last_name}', password = '${password}' WHERE username = '${username}'`;
-    mysql_pool.getConnection(function (err,connection) {
+    const profile_query = `UPDATE user SET first_name = '${first_name}', last_name = '${last_name}', password = '${password}' WHERE username = '${username}'`;
+    mysql_pool.getConnection(function (err, connection) {
         connection.query(profile_query, (err, results) => {
             if (err) {
                 res.send('something happened sorry');
@@ -288,12 +288,10 @@ app.put('/profile/:username', (req, res) => {
 
 });
 
-app.delete('/profile/:username', (req,res) => {
-
+app.put('/admin/:username', (req,res) => {
     const {username} = req.params;
-    console.log(username);
 
-    const profile_query =  `DELETE FROM user WHERE username = '${username}'`;
+    const profile_query =  `UPDATE user SET isAdmin = true WHERE username = '${username}'`;
     mysql_pool.getConnection(function (err,connection) {
         connection.query(profile_query, (err, results) => {
             if (err) {
@@ -304,6 +302,82 @@ app.delete('/profile/:username', (req,res) => {
                     res.send('this guy dont exist man');
                 }
                 else {
+
+                    res.send(req.body);
+                }
+            }
+        });
+        connection.release();
+    })
+
+});
+
+app.put('/ban/:username', (req,res) => {
+    const {username} = req.params;
+
+    const profile_query =  `UPDATE user SET ban_status = true WHERE username = '${username}'`;
+    mysql_pool.getConnection(function (err,connection) {
+        connection.query(profile_query, (err, results) => {
+            if (err) {
+                res.send('something happened sorry');
+            }
+            else {
+                if (results.length === 0) {
+                    res.send('this guy dont exist man');
+                }
+                else {
+
+                    res.send(req.body);
+                }
+            }
+        });
+        connection.release();
+    })
+
+});
+
+app.put('/unban/:username', (req,res) => {
+    const {username} = req.params;
+
+    const profile_query =  `UPDATE user SET ban_status = false WHERE username = '${username}'`;
+    mysql_pool.getConnection(function (err,connection) {
+        connection.query(profile_query, (err, results) => {
+            if (err) {
+                res.send('something happened sorry');
+            }
+            else {
+                if (results.length === 0) {
+                    res.send('this guy dont exist man');
+                }
+                else {
+
+                    res.send(req.body);
+                }
+            }
+        });
+        connection.release();
+    })
+
+});
+
+app.delete('/profile/:username', (req, res) => {
+
+    const {username} = req.params;
+    console.log(username);
+
+    const profile_query = `DELETE FROM user WHERE username = '${username}'`;
+    mysql_pool.getConnection(function (err, connection) {
+        connection.query(profile_query, (err, results) => {
+            if (err) {
+                res.send('something happened sorry');
+            }
+            else {
+                if (results.length === 0) {
+                    res.send('this guy dont exist man');
+                }
+                else {
+                    req.session.currentUser = undefined;
+                    req.session = null;
                     req.session.destroy();
                     res.send(200);
                 }
@@ -313,12 +387,12 @@ app.delete('/profile/:username', (req,res) => {
     })
 });
 
-app.post('/profile/teams',(req,res) => {
-    const {username,team_id, team} = req.body;
+app.post('/profile/teams', (req, res) => {
+    const {username, team_id, team} = req.body;
     const insert_query = `INSERT INTO user_team (user, team_id, team) 
   VALUES ('${username}', '${team_id}', '${team}')`;
 
-    mysql_pool.getConnection(function (err,connection) {
+    mysql_pool.getConnection(function (err, connection) {
         connection.query(insert_query, (err, results) => {
             if (err) {
                 //res.status(400).json('Invalid credentials');
@@ -363,14 +437,14 @@ app.get('/profile/teams/:username',(req,res) => {
 
 })
 
-app.put('/favorite_team/:username', (req,res) => {
+app.put('/favorite_team/:username', (req, res) => {
 
     const {username} = req.params;
     const {favorite_team} = req.body;
     console.log(favorite_team);
 
-    const profile_query =  `UPDATE user SET favorite_team = '${favorite_team}' WHERE username = '${username}'`;
-    mysql_pool.getConnection(function (err,connection) {
+    const profile_query = `UPDATE user SET favorite_team = '${favorite_team}' WHERE username = '${username}'`;
+    mysql_pool.getConnection(function (err, connection) {
         connection.query(profile_query, (err, results) => {
             if (err) {
                 res.send('something happened sorry');
@@ -390,14 +464,12 @@ app.put('/favorite_team/:username', (req,res) => {
 
 });
 
-
-
-app.get('/loggedIn', (req,res) => {
+app.get('/loggedIn', (req, res) => {
 
     console.log(req.session);
     let user = req.session['currentUser']
-    if (user!==undefined){
-        mysql_pool.getConnection(function (err,connection) {
+    if (user !== undefined) {
+        mysql_pool.getConnection(function (err, connection) {
             const profile_query = `SELECT * FROM user WHERE username = '${user}'`;
             connection.query(profile_query, (err, results) => {
                 if (err) {
@@ -405,18 +477,18 @@ app.get('/loggedIn', (req,res) => {
                 }
                 else {
                     return res.json({
-                        data: results[0]
-                    });
+                                        data: results[0]
+                                    });
                 }
             });
             connection.release();
         })
         // res.send(req.session['currentUser'])
     }
-    else{
+    else {
         return res.json({
-            data: "NOT_LOGGED_IN"
-        });
+                            data: "NOT_LOGGED_IN"
+                        });
     }
 })
 
@@ -554,9 +626,9 @@ app.get('/teams/team/:team_id', (req, res) => {
         });
 });
 
-app.post('/api/get_comment_news/', (req,res) => {
+app.post('/api/get_comment_news/', (req, res) => {
 
-    mysql_pool.getConnection(function (err,connection) {
+    mysql_pool.getConnection(function (err, connection) {
         let url = req.body.url;
         const getComments = `SELECT * FROM comment_news WHERE url = '${url}'`;
         // let getComments = `SELECT username FROM user WHERE username = '${username}'`;
@@ -567,25 +639,24 @@ app.post('/api/get_comment_news/', (req,res) => {
             }
             else {
                 console.log(results);
-                return res.json(200,{
+                return res.json(200, {
                     body: results
                 });
             }
         });
         connection.release();
     })
-    
+
 })
 
-app.post('/api/comment_news', (req,res) => {
-    
+app.post('/api/comment_news', (req, res) => {
+
     const {url, user, comment, date} = req.body
     const url1 = req.body.url;
     const insert_query = `INSERT INTO comment_news (url, user, comment, date) 
   VALUES ('${url}', '${user}', '${comment}', '${date}')`;
-    
-    
-    mysql_pool.getConnection(function (err,connection) {
+
+    mysql_pool.getConnection(function (err, connection) {
         connection.query(insert_query, (err, results) => {
             if (err) {
                 res.status(400).json("Couldn't add comment");
@@ -599,10 +670,10 @@ app.post('/api/comment_news', (req,res) => {
     })
 })
 
-app.delete('/api/comment_news',(req,res) => {
-    const {url,user,comment} = req.body
+app.delete('/api/comment_news', (req, res) => {
+    const {url, user, comment} = req.body
     const delete_query = `DELETE FROM COMMENT_NEWS WHERE URL='${url}' AND USER = '${user}' AND COMMENT='${comment}'`;
-    mysql_pool.getConnection(function (err,connection) {
+    mysql_pool.getConnection(function (err, connection) {
         connection.query(delete_query, (err, results) => {
             if (err) {
                 res.status(400).json("Couldn't add comment");
@@ -616,19 +687,17 @@ app.delete('/api/comment_news',(req,res) => {
     })
 })
 
-app.post('/api/team_logo',(req,res) => {
+app.get('/api/team_logo', (req, res) => {
     const {name} = req.body
     const select_query = `SELECT logo FROM teams WHERE name = '${name}'`
-    mysql_pool.getConnection(function (err,connection) {
+    mysql_pool.getConnection(function (err, connection) {
         connection.query(select_query, (err, results) => {
             if (err) {
                 res.status(400).json("Couldn't find team");
                 //res.send('unsuccessful yo');
             }
             else {
-                res.json({
-                    data:results[0]
-                });
+                res.send(results[0]);
             }
         });
         connection.release();
