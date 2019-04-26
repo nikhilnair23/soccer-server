@@ -102,7 +102,7 @@ app.get('/teams/all', (req, res) => {
                 return res.send(err);
             }
             else {
-                console.log(results)
+                //console.log(results)
                 return res.json({
                                     data: results
                                 });
@@ -135,9 +135,10 @@ app.post('/allteams', (req, res) => {
 
 
 app.post('/register', (req, res) => {
-    const {username, password, first_name, last_name, favorite_team, isAdmin} = req.body;
-    const insert_query = `INSERT INTO user (username, password, first_name, last_name, favorite_team, isAdmin) 
-  VALUES ('${username}', '${password}', '${first_name}', '${last_name}', '${favorite_team}', '${isAdmin}')`;
+    const {username, password, first_name, last_name, favorite_team, isAdmin, ban_status, isPro} = req.body;
+    //console.log()
+    const insert_query = `INSERT INTO user (username, password, first_name, last_name, favorite_team, isAdmin, ban_status, isPro) 
+  VALUES ('${username}', '${password}', '${first_name}', '${last_name}', '${favorite_team}', '${isAdmin}', '${ban_status}', '${isPro}')`;
 
     mysql_pool.getConnection(function (err, connection) {
         connection.query(insert_query, (err, results) => {
