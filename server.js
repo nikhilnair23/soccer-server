@@ -719,6 +719,4 @@ app.post('/api/team_logo', (req, res) => {
     })
 })
 
-app.listen(5000, () => {
-    console.log('app is running on 5000')
-});
+app.listen(process.env.PORT || 5000)
