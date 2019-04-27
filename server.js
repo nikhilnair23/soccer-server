@@ -700,7 +700,7 @@ app.delete('/api/comment_news', (req, res) => {
     })
 })
 
-app.get('/api/team_logo', (req, res) => {
+app.post('/api/team_logo', (req, res) => {
     const {name} = req.body
     const select_query = `SELECT logo FROM teams WHERE name = '${name}'`
     mysql_pool.getConnection(function (err, connection) {
@@ -710,7 +710,9 @@ app.get('/api/team_logo', (req, res) => {
                 //res.send('unsuccessful yo');
             }
             else {
-                res.send(results[0]);
+                res.json({
+                    data:results[0]
+                });
             }
         });
         connection.release();
