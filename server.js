@@ -428,7 +428,7 @@ app.post('/profile/team/unfollow',(req,res) => {
         connection.query(profile_query, (err, results) => {
             if (err)
                 //res.status(400).json('Invalid credentials');
-
+                //res.send('unsuccessful yo');
                 res.sendStatus(400);
             }
             else {
