@@ -423,7 +423,7 @@ app.post('/profile/teams', (req, res) => {
 
 app.get('/profile/teams/:username',(req,res) => {
     const {username} = req.params;
-    const profile_query = `SELECT TEAM FROM USER_TEAM WHERE USER = '${username}'`;
+    const profile_query = `SELECT TEAM,TEAM_ID FROM USER_TEAM WHERE USER = '${username}'`;
     // let arr[] = new arr;
 
     mysql_pool.getConnection(function (err,connection) {
