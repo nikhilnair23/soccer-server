@@ -273,6 +273,26 @@ app.post('/follow_user', (req, res) => {
     })
 })
 
+app.post('/unfollow_user', (req,res) => {
+    const {username_following, username_followed} = req.body;
+    const delete_query = `DELETE FROM user_follow where user_following = '${username_following}' AND user_followed = '${username_followed}'`;
+
+    mysql_pool.getConnection(function (err, connection) {
+        connection.query(delete_query, (err, results) => {
+            if (err) {
+                //res.status(400).json('Invalid credentials');
+                //res.send('unsuccessful yo');
+                res.sendStatus(400);
+            }
+            else {
+                //res.json(req.body);
+                res.sendStatus(200);
+            }
+        });
+        connection.release();
+    })
+})
+
 app.put('/profile/:username', (req, res) => {
 
     const {username} = req.params;
@@ -421,24 +441,7 @@ app.post('/profile/teams', (req, res) => {
     })
 });
 
-/*app.post('/profile/team/unfollow',(req,res) => {
-    const {username, team_id} = req.body;
-    const profile_query = `DELETE FROM user_team WHERE user = '${username}' AND team_id = '${team_id}'`;
-    mysql_pool.getConnection(function (err, connection) {
-        connection.query(profile_query, (err, results) => {
-            if (err)
-                //res.status(400).json('Invalid credentials');
-                //res.send('unsuccessful yo');
-                res.sendStatus(400);
-            }
-            else {
-                //res.json(req.body);
-                res.sendStatus(200);
-            }
-        });
-        connection.release();
-    })
-})*/
+
 
 app.post('/profile/team/unfollow',(req,res) => {
     const {username, team_id} = req.body;
