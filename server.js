@@ -423,13 +423,13 @@ app.post('/profile/teams', (req, res) => {
 
 app.post('/profile/team/unfollow',(req,res) => {
     const {username, team_id} = req.body;
-    const profile_query = `DELETE FROM user_team WHERE username = '${username}' AND team_id = '${team_id}'`;
+    const profile_query = `DELETE FROM user_team WHERE user = '${username}' AND team_id = '${team_id}'`;
     mysql_pool.getConnection(function (err, connection) {
         connection.query(profile_query, (err, results) => {
             if (err)
                 //res.status(400).json('Invalid credentials');
                 //res.send('unsuccessful yo');
-                res.status(401);
+                res.status(400);
                 // res.sendStatus(400);
             }
             else {
