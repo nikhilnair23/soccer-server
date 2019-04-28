@@ -700,6 +700,25 @@ app.delete('/api/comment_news', (req, res) => {
     })
 })
 
+app.get('/api/team/:teamId',(req,res)=> {
+    const {teamId} = req.params
+    const select_query = `SELECT * FROM teams WHERE team_id = '${teamId}'`
+    mysql_pool.getConnection(function (err, connection) {
+        connection.query(select_query, (err, results) => {
+            if (err) {
+                res.status(400).json("Couldn't find team");
+                //res.send('unsuccessful yo');
+            }
+            else {
+                res.json({
+                    data:results[0]
+                });
+            }
+        });
+        connection.release();
+    })
+})
+
 app.post('/api/team_logo', (req, res) => {
     const {name} = req.body
     const select_query = `SELECT logo FROM teams WHERE name = '${name}'`
