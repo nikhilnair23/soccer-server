@@ -421,7 +421,7 @@ app.post('/profile/teams', (req, res) => {
     })
 })
 
-app.delete('/profile/unfollow_team',(req,res) => {
+app.post('/profile/unfollow_team',(req,res) => {
     const {username, team_id} = req.body;
     const profile_query = `DELETE FROM user_team WHERE username = '${username}' AND team_id = '${team_id}'`;
     mysql_pool.getConnection(function (err, connection) {
