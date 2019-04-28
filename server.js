@@ -429,7 +429,7 @@ app.post('/profile/team/unfollow',(req,res) => {
             if (err)
                 //res.status(400).json('Invalid credentials');
                 //res.send('unsuccessful yo');
-                res.status(400).json("Couldn't delete");
+                res.status(401);
                 // res.sendStatus(400);
             }
             else {
