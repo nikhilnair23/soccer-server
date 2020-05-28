@@ -6,7 +6,7 @@ const unirest = require('unirest');
 // const initDB = require('./data/db').initDb;
 // const getDB = require('./data/db').getDb;
 const bodyparser = require('body-parser');
-let session = require('express-session')
+let session = require('express-session');
 
 var allowedOrigins = ['http://localhost:3000',
     'https://soccer-website-client.herokuapp.com'];
@@ -554,7 +554,7 @@ app.get('/loggedIn', (req, res) => {
 app.get('/leagues', (req, res) => {
 
     unirest.get("https://api-football-v1.p.rapidapi.com/leagues/season/2018")
-        .header("X-RapidAPI-Key", "b83be741d1mshbbc318cf68d0e9fp139528jsn0cddc0e04919")
+        .header("X-RapidAPI-Key", "900b33fc6fmshb039cdc8e64b2b9p15ddddjsnc8aee18863f8")
         .header("Accept", "application/json")
         .end(function (result) {
             //console.log(result.status, result.headers, result.body);
@@ -566,9 +566,9 @@ app.get('/leagues', (req, res) => {
 app.get('/standings/:id', (req, res) => {
 
     const {id} = req.params
-
+    console.log(id);
     unirest.get("https://api-football-v1.p.rapidapi.com/leagueTable/" + id)
-        .header("X-RapidAPI-Key", "b83be741d1mshbbc318cf68d0e9fp139528jsn0cddc0e04919")
+        .header("X-RapidAPI-Key", "900b33fc6fmshb039cdc8e64b2b9p15ddddjsnc8aee18863f8")
         .header("Accept", "application/json")
         .end(function (result) {
             //console.log(result.status, result.headers, result.body);
@@ -580,7 +580,7 @@ app.get('/standings/:id', (req, res) => {
 app.get('/fixtures/live', (req, res) => {
 
     unirest.get("https://api-football-v1.p.rapidapi.com/fixtures/live")
-        .header("X-RapidAPI-Key", "b83be741d1mshbbc318cf68d0e9fp139528jsn0cddc0e04919")
+        .header("X-RapidAPI-Key", "900b33fc6fmshb039cdc8e64b2b9p15ddddjsnc8aee18863f8")
         .header("Accept", "application/json")
         .end(function (result) {
             //console.log(result.status, result.headers, result.body);
@@ -592,7 +592,7 @@ app.get('/fixtures/live', (req, res) => {
 app.get('/fixtures/epl', (req, res) => {
 
     unirest.get("https://api-football-v1.p.rapidapi.com/fixtures/league/2")
-        .header("X-RapidAPI-Key", "b83be741d1mshbbc318cf68d0e9fp139528jsn0cddc0e04919")
+        .header("X-RapidAPI-Key", "900b33fc6fmshb039cdc8e64b2b9p15ddddjsnc8aee18863f8")
         .header("Accept", "application/json")
         .end(function (result) {
             // console.log(result.status, result.headers, result.body);
@@ -604,7 +604,7 @@ app.get('/fixtures/epl', (req, res) => {
 app.get('/fixtures/laliga', (req, res) => {
 
     unirest.get("https://api-football-v1.p.rapidapi.com/fixtures/league/87")
-        .header("X-RapidAPI-Key", "b83be741d1mshbbc318cf68d0e9fp139528jsn0cddc0e04919")
+        .header("X-RapidAPI-Key", "900b33fc6fmshb039cdc8e64b2b9p15ddddjsnc8aee18863f8")
         .header("Accept", "application/json")
         .end(function (result) {
             //console.log(result.status, result.headers, result.body);
@@ -616,7 +616,7 @@ app.get('/fixtures/laliga', (req, res) => {
 app.get('/fixtures/bundesliga', (req, res) => {
 
     unirest.get("https://api-football-v1.p.rapidapi.com/fixtures/league/8")
-        .header("X-RapidAPI-Key", "b83be741d1mshbbc318cf68d0e9fp139528jsn0cddc0e04919")
+        .header("X-RapidAPI-Key", "900b33fc6fmshb039cdc8e64b2b9p15ddddjsnc8aee18863f8")
         .header("Accept", "application/json")
         .end(function (result) {
             //console.log(result.status, result.headers, result.body);
@@ -628,7 +628,7 @@ app.get('/fixtures/bundesliga', (req, res) => {
 app.get('/fixtures/seriea', (req, res) => {
 
     unirest.get("https://api-football-v1.p.rapidapi.com/fixtures/league/94")
-        .header("X-RapidAPI-Key", "b83be741d1mshbbc318cf68d0e9fp139528jsn0cddc0e04919")
+        .header("X-RapidAPI-Key", "900b33fc6fmshb039cdc8e64b2b9p15ddddjsnc8aee18863f8")
         .header("Accept", "application/json")
         .end(function (result) {
             //console.log(result.status, result.headers, result.body);
@@ -644,7 +644,7 @@ app.get('/fixtures/h2h/:homeTeam/:awayTeam', (req, res) => {
     console.log(homeTeam, awayTeam);
 
     unirest.get("https://api-football-v1.p.rapidapi.com/fixtures/h2h/" + homeTeam + "/" + awayTeam)
-        .header("X-RapidAPI-Key", "b83be741d1mshbbc318cf68d0e9fp139528jsn0cddc0e04919")
+        .header("X-RapidAPI-Key", "900b33fc6fmshb039cdc8e64b2b9p15ddddjsnc8aee18863f8")
         .header("Accept", "application/json")
         .end(function (result) {
             //console.log(result.status, result.headers, result.body);
@@ -658,7 +658,7 @@ app.get('/fixtures/id/:fixture_id', (req, res) => {
     const {fixture_id} = req.params;
 
     unirest.get("https://api-football-v1.p.rapidapi.com/fixtures/id/" + fixture_id)
-        .header("X-RapidAPI-Key", "b83be741d1mshbbc318cf68d0e9fp139528jsn0cddc0e04919")
+        .header("X-RapidAPI-Key", "900b33fc6fmshb039cdc8e64b2b9p15ddddjsnc8aee18863f8")
         .header("Accept", "application/json")
         .end(function (result) {
             //console.log(result.status, result.headers, result.body);
@@ -672,7 +672,7 @@ app.get('/teams/team/:team_id', (req, res) => {
     const {team_id} = req.params;
 
     unirest.get("https://api-football-v1.p.rapidapi.com/teams/team/" + team_id)
-        .header("X-RapidAPI-Key", "b83be741d1mshbbc318cf68d0e9fp139528jsn0cddc0e04919")
+        .header("X-RapidAPI-Key", "900b33fc6fmshb039cdc8e64b2b9p15ddddjsnc8aee18863f8")
         .header("Accept", "application/json")
         .end(function (result) {
             //console.log(result.status, result.headers, result.body);
