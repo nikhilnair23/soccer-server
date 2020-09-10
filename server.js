@@ -10,7 +10,7 @@ const API_KEY = "b83be741d1mshbbc318cf68d0e9fp139528jsn0cddc0e04919";
 let url = "https://api-football-v1.p.rapidapi.com/v2";
 let session = require('express-session');
 
-var allowedOrigins = ['http://localhost:3000',
+var allowedOrigins = ['http://localhost:3000', 'http://localhost:3001',
     'https://soccer-website-client.herokuapp.com'];
 
 let corsOptions = {
